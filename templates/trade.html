@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='wishlist_page/swiper-bundle.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='wishlist_page/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='add_book_page/styles.css') }}">
+    <title>BookTrades</title>
+    <style>
+      .genres-modal, .book-details-modal, .user-books-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1001;
+      background-color: rgba(0, 0, 0, 0.7);
+      }
+      .genres-modal__content, .book-details-modal__content, .user-books-modal__content {
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      width: 80%;
+      max-width: 500px;
+      text-align: center;
+      }
+      .genres-modal__content, .book-details-modal__content {
+      background: rgba(255, 255, 255, 0.1);
+      }
+      /* Lista de livros e cartões */
+      .books-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+      }
+      .user-books-modal .books-list {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding: 10px;
+      gap: 15px;
+      }
+      .book-card {
+      background: var(--container-color, #f5f5f5);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      }
+      .book-card:hover {
+      transform: scale(1.05);
+      }
+      .book-card__image, .user-books-modal .book-card__image {
+      width: 100%;
+      height: 150px; /* Altura padrão principal */
+      object-fit: cover;
+      border-radius: 4px;
+      }
+      /* Classe para padronizar as dimensões das imagens no modal de detalhes */
+      .book-details-modal__content img {
+      width: 200px;
+      height: 300px;
+      object-fit: cover;
+      border-radius: 8px;
+      display: inline;
+      }
+      .user-books-modal .book-card__image {
+      min-width: 150px;
+      flex-shrink: 0;
+      }
+      .book-details-modal__content img {
+      width: 200px;
+      height: 300px;
+      }
+      /* Texto nos cartões */
+      .book-card__title {
+      font-size: 1rem;
+      margin: 10px 0 5px;
+      }
+      .book-card__author {
+      font-size: 0.875rem;
+      color: #555;
+      }
+      /* Botões */
+      .genres-modal__buttons .button, .close-details-btn {
+      margin: 10px;
+      }
+      .close-details-btn {
+      background-color: red;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+      }
+      .close-details-btn:hover {
+      background-color: darkred;
+      }
+      /* Modo escuro */
+      body.dark-mode .book-card {
+      background: hsl(230, 12%, 12%);
+      color: #f9f9f9;
+      box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+      }
+      /* Alertas e animações */
+      .flash-container {
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      z-index: 1000;
+      max-width: 300px;
+      }
+      .flash-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      }
+      .alert {
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-size: 14px;
+      color: #fff;
+      animation: fade-in-out 4s ease-in-out;
+      opacity: 0.95;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+      .alert-success { background-color: #28a745; }
+      .alert-danger { background-color: #dc3545; }
+      .alert-warning { background-color: #ffc107; }
+      .alert-info { background-color: #17a2b8; }
+      @keyframes fade-in-out {
+      0%, 90% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-20px); }
+      }
+      .wishlist-button-container {
+      text-align: center;
+      margin-top: 20px;
+      }
+      .wishlist-button {
+      display: inline-block;
+      background-color: #5865f2; /* azul similar ao da imagem */
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: bold;
+      text-decoration: none;
+      padding: 12px 24px;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* sombra */
+      }
+      .wishlist-button:hover {
+      background-color: #4752c4; /* cor mais escura ao passar o mouse */
+      transform: translateY(-2px); /* efeito ao passar o mouse */
+      }
+      .wishlist-button:active {
+      background-color: #3c44a8; /* cor ao clicar */
+      transform: translateY(0); /* remove o efeito de hover ao clicar */
+      }
+      /*=============== DARK THEME ===============*/
+      body.dark-theme {
+      --title-color: hsl(230, 48%, 85%);
+      --text-color: hsl(230, 16%, 70%);
+      --border-color: hsl(230, 12%, 18%);
+      --body-color: hsl(230, 12%, 8%);
+      --container-color: hsl(230, 12%, 12%);/
+      }
+      /* Aplicando as variáveis de cor no tema */
+      body {
+      background-color: var(--body-color);
+      color: var(--text-color);
+      }
+      button {
+      background-color: var(--first-color);
+      color: var(--white-color);
+      }
+      button:hover {
+      background-color: hsl(230, 62%, 40%);
+      }
+      .genre-modal__content, .book-details-modal__content {
+      background: rgba(255, 255, 255, 0.1); /* Fundo com transparência */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      }
+      .book-card {
+      background: var(--container-color);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      }
+      .book-card:hover {
+      transform: scale(1.05);
+      }
+      .book-card__image {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 4px;
+      }
+      .book-card__title {
+      font-size: 1rem;
+      margin: 10px 0 5px;
+      }
+      .book-card__author {
+      font-size: 0.875rem;
+      color: #555;
+      }
+      .close-details-btn {
+      background-color: red;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+      }
+      .close-details-btn:hover {
+      background-color: darkred;
+      }
+      /* Dark theme for modals */
+      .genres-modal, .book-details-modal {
+      background-color: rgba(0, 0, 0, 0.7);
+      color: var(--white-color);
+      }
+    </style>
+  </head>
+  <body>
+    <!--==================== HEADER ====================-->
+    <header class="header" id="header">
+      <nav class="nav container">
+        <a href="/home" class="nav__log">
+        <i class="ri-book-3-line"></i> BookTrades
+        </a>
+        <div class="nav__menu">
+          <ul class="nav__list">
+            <li class="nav__item">
+              <a href="{{ url_for('home') }}" class="nav__link">
+              <i class="ri-home-line"></i>
+              <span>Home</span>
+              </a>
+            </li>
+            <li class="nav__item">
+              <a href="{{ url_for('recommend') }}" class="nav__link">
+              <i class="ri-book-3-line"></i>
+              <span>Recomended</span>
+              </a>
+            </li>
+            <li class="nav__item">
+              <a href="{{ url_for('trade') }}" class="nav__link">
+              <i class="ri-price-tag-3-line"></i>
+              <span>Trades</span>
+              </a>
+            </li>
+            <li class="nav__item">
+              <a href="{{ url_for('wishlist') }}" class="nav__link">
+              <i class="ri-bookmark-line"></i>
+              <span>Wishlist</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="nav__actions">
+          <!-- Theme Button -->
+          <i class="ri-moon-line change-theme" id="theme-button"></i>
+        </div>
+      </nav>
+    </header>
+    <main class="main">
+      <section class="home section" id="home">
+        <div class="home__container container grid">
+          <div class="home__data">
+            <h1 class="home__title">
+              Browse Tradelist
+            </h1>
+            <p class="home__description">
+              Find the books you have available for trading.
+            </p>
+            <div class="wishlist-button-container">
+              <a href="/offer" class="wishlist-button">See all my Offers</a>
+            </div>
+          </div>
+          <div class="home__images">
+            <div class="books-list" id="books-list">
+              {% if books %}
+              <!-- Books will be dynamically loaded here -->
+              {% for book in books %}
+              <div class="book-card" 
+                data-book-id="{{ book[0] }}" 
+                data-title="{{ book[1] }}" 
+                data-author="{{ book[2] }}" 
+                data-genre="{{ book[3] }}" 
+                data-dateAdded="{{ book[5] }}" 
+                data-image_url="{{ book[4] }}" 
+                onclick="showBookDetails(this)">
+                <img class="book-card__image" src="{{ book[4] }}" alt="{{ book[2] }}">
+                <h4 class="book-card__title">{{ book[1] }}</h4>
+                <p class="book-card__author">{{ book[2] }}</p>
+              </div>
+              {% endfor %}
+              {% else %}
+              <div class="no-books-container">
+                <p class="no-books-message">Tradelist is empty</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Modal for book details -->
+      <div class="book-details-modal" id="book-details-modal">
+        <div class="book-details-modal__content">
+          <img id="book-image" src="" alt="Book Image">
+          <h3 id="book-title"></h3>
+          <p><strong>Author:</strong> <span id="book-author"></span></p>
+          <p><strong>Genre:</strong> <span id="book-genre"></span></p>
+          <p><strong>Added on:</strong> <span id="book-date"></span></p>
+          <button class="close-details-btn" id="close-details-btn">Close</button>
+          <!-- Form for removing the book -->
+          <form id="remove-book-form" method="POST" action="/request-change">
+            <input type="hidden" id="book-id" name="book_id" value="">
+            <button type="submit" class="close-details-btn" id="remove-from-tradelist-btn">Remove from Tradelist</button>
+          </form>
+          <!-- Hidden form for sending the request -->
+          <form id="offer-book-form" method="POST" action="/make-offer" style="display: none;">
+            <input type="hidden" id="book-offered-id" name="book_id" value="">
+            <input type="hidden" id="target-book-id" name="target_book_id" value="">
+            <button type="submit" id="make-offer-btn"></button>
+          </form>
+          <button class="close-details-btn" id="request-exchange-btn">Make an Offer</button>
+        </div>
+      </div>
+      <!-- Container para mensagens flash -->
+      <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+      </div>
+      <!-- Modal for user books -->
+      <div class="user-books-modal" id="user-books-modal">
+        <div class="user-books-modal__content">
+          <h3>Your Books</h3>
+          <div class="books-list" id="user-books-list">
+            <!-- User's books will be loaded here -->
+          </div>
+          <button class="close-details-btn" id="close-user-books-btn">Close</button>
+        </div>
+      </div>
+    </main>
+    <script>
+      // ====================================== SCRIPTING ====================================== //
+      // Function to display the book details in a modal
+      function showBookDetails(bookElement) {
+          var book = {
+              title: bookElement.getAttribute('data-title'),
+              author: bookElement.getAttribute('data-author'),
+              genre: bookElement.getAttribute('data-genre'),
+              dateAdded: bookElement.getAttribute('data-dateAdded'),
+              image: bookElement.getAttribute('data-image_url'),
+              id: bookElement.getAttribute('data-book-id')
+          };
+      
+          document.getElementById('book-title').textContent = book.title;
+          document.getElementById('book-author').textContent = book.author;
+          document.getElementById('book-genre').textContent = book.genre;
+          document.getElementById('book-date').textContent = book.dateAdded;
+          document.getElementById('book-image').src = book.image;
+      
+          document.getElementById('book-id').value = book.id;
+          document.getElementById('book-offered-id').value = book.id;      
+          document.getElementById('book-details-modal').style.display = 'flex';
+      }
+      
+      // Function to close the book details modal
+      document.getElementById('close-details-btn').addEventListener('click', () => {
+          document.getElementById('book-details-modal').style.display = 'none';
+      });
+      
+      document.addEventListener("DOMContentLoaded", () => {
+          const requestExchangeButton = document.getElementById("request-exchange-btn");
+          const userBooksModal = document.getElementById("user-books-modal");
+          const closeUserBooksButton = document.getElementById("close-user-books-btn");
+          const userBooksList = document.getElementById("user-books-list");
+      
+          // Function to open the user books modal
+          function openUserBooksModal() {
+              loadUserBooks();
+              userBooksModal.style.display = "flex";
+          }
+      
+          // Function to close the user books modal
+          function closeUserBooksModal() {
+              userBooksModal.style.display = "none";
+          }
+      
+          // Function to load the user's books into the modal
+          async function loadUserBooks() {
+              try {
+                  const response = await fetch("/get-all-books");
+                  const books = await response.json();
+      
+                  if (books && books.length > 0) {
+                      userBooksList.innerHTML = "";
+                      books.forEach((book) => {
+                          const bookCard = document.createElement("div");
+                          bookCard.classList.add("book-card");
+                          bookCard.innerHTML = `
+                              <img class="book-card__image" src="${book.image_url}" alt="${book.title}">
+                              <h4 class="book-card__title">${book.title}</h4>
+                              <p class="book-card__author">${book.author}</p>
+                          `;
+      
+                          bookCard.setAttribute("data-title", book.title);
+                          bookCard.setAttribute("data-author", book.author);
+                          bookCard.setAttribute("data-genre", book.genre);
+                          bookCard.setAttribute("data-date-added", book.dateAdded);
+                          bookCard.setAttribute("data-image_url", book.image_url);
+                          bookCard.setAttribute("data-book-id", book.id);
+      
+                          bookCard.addEventListener("click", async () => {
+                              const bookId = book.id;
+                                    const userConfirmed = confirm(
+                                  `Do you want to offer "${book.title}" for trade?`
+                              );
+      
+                              if (userConfirmed) {
+                                  document.getElementById('target-book-id').value = book.id;
+                                  document.getElementById('offer-book-form').submit();
+                              }
+                          });
+      
+                          userBooksList.appendChild(bookCard);
+                      });
+                  } else {
+                      userBooksList.innerHTML = "<p>No books available for trade.</p>";
+                  }
+              } catch (error) {
+                  console.error("Error loading user books:", error);
+                  userBooksList.innerHTML = "<p>There was an error fetching your books.</p>";
+              }
+          }
+      
+          if (requestExchangeButton) {
+              requestExchangeButton.addEventListener("click", () => {
+                  openUserBooksModal();
+              });
+          }
+      
+          closeUserBooksButton.addEventListener("click", () => {
+              closeUserBooksModal();
+          });
+      });
+      
+      // Apagar as mensagens Flash após 3 segundos
+      document.addEventListener("DOMContentLoaded", () => {
+         const flashMessages = document.querySelectorAll(".flash-messages .alert");
+      
+         flashMessages.forEach(message => {
+            setTimeout(() => {
+               message.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+               message.style.opacity = "0";
+               message.style.transform = "translateY(-10px)";
+               setTimeout(() => message.remove(), 500);
+            }, 3000); // 3 segundos antes de desaparecer
+         });
+      });
+      
+      /*=============== DARK LIGHT THEME ===============*/ 
+      // Handle theme switching functionality
+      const themeButton = document.getElementById('theme-button');
+      const darkTheme = 'dark-theme';
+      const iconTheme = 'ri-sun-line';
+      
+      // Get the saved theme and icon from localStorage
+      const selectedTheme = localStorage.getItem('selected-theme');
+      const selectedIcon = localStorage.getItem('selected-icon');
+      
+      // Helper functions to check the current theme and icon
+      const getCurrentTheme = () => document.body.classList.contains(darkTheme) ? 'dark' : 'light';
+      const getCurrentIcon = () => themeButton.classList.contains(iconTheme) ? 'ri-moon-line' : 'ri-sun-line';
+      
+      // Apply the saved theme and icon when the page loads
+      if (selectedTheme) {
+         document.body.classList[selectedTheme === 'dark' ? 'add' : 'remove'](darkTheme);
+         themeButton.classList[selectedIcon === 'ri-moon-line' ? 'add' : 'remove'](iconTheme);
+      }
+      
+      // Toggle the theme and icon when the theme button is clicked
+      themeButton.addEventListener('click', () => {
+         document.body.classList.toggle(darkTheme);
+         themeButton.classList.toggle(iconTheme);
+         localStorage.setItem('selected-theme', getCurrentTheme());
+         localStorage.setItem('selected-icon', getCurrentIcon());
+      });
+      
+      displayBooks(books);
+      
+    </script>
+  </body>
+</html>

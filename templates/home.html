@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--=============== FAVICON ===============-->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='home_page/favicon.png') }}" type="image/x-icon">
+    <!--=============== REMIXICONS ===============-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css">
+    <!--=============== SWIPER CSS ===============-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='home_page/swiper-bundle.min.css') }}">
+    <!--=============== CSS ===============-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='home_page/styles.css') }}">
+    <title>Responsive book website - BookTrades</title>
+  </head>
+  <body>
+    <!--==================== HEADER ====================-->
+    <header class="header" id="header">
+      <nav class="nav container">
+        <a href="/home" class="nav__log">
+        <i class="ri-book-3-line"></i>BookTrades
+        </a>
+        <div class="nav__menu">
+          <ul class="nav__list">
+            <li class="nav__item">
+              <a href="#home" class="nav__link">
+              <i class="ri-home-line"></i>
+              <span>Home</span>
+              </a>
+            </li>
+            <li class="nav__item">
+              <a href="#featured" class="nav__link">
+              <i class="ri-book-3-line"></i>
+              <span>Recommended</span>
+              </a>
+            </li>
+            <li class="nav__item">
+              <a href="#discount" class="nav__link">
+              <i class="ri-price-tag-3-line"></i>
+              <span>Trades</span>
+              </a>
+            </li>
+            <li class="nav__item">
+              <a href="#new" class="nav__link">
+              <i class="ri-bookmark-line"></i>
+              <span>Wishlist</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="nav__actions">
+          <!-- Search Button -->
+          <i class="ri-search-line search-button" id="search-button"></i>
+          <!-- Theme Button -->
+          <i class="ri-moon-line change-theme" id="theme-button"></i>
+          <!--==================== ADD BOOK ====================-->
+          <button id="add-book-button" onclick="location.href='/add_book'">
+          <i class="ri-add-line"></i>
+          </button>
+          <!--==================== USER SETTINGS ====================-->
+          <button id="add-book-button" onclick="location.href='/user'">
+          <i class="ri-user-line"></i>
+          </button>
+          <!-- Logout Button -->
+          <form action="/logout">
+            <button type="submit" class="logout-button" id="logout-button">
+            <i class="ri-logout-box-r-line"></i>LogOut
+            </button>
+          </form>
+        </div>
+      </nav>
+    </header>
+    <style>
+      .logout-button {
+      background: none; /* Remove o fundo branco */
+      border: none; /* Remove qualquer borda */
+      color: inherit; /* Usa a cor do texto padrão */
+      font-size: 1rem; /* Ajusta o tamanho da fonte */
+      cursor: pointer; /* Altera o cursor para indicar que é um botão */
+      padding: 2px; /* Espaçamento interno */
+      transition: color 0.3s ease; /* Efeito suave na cor */
+      }
+      .logout-button i {
+      margin-right: 1px; /* Ajusta o espaçamento entre o ícone e o texto */
+      }
+      .logout-button:hover {
+      color: rgb(45, 72, 148); 
+      }
+      /* Estilo do conteúdo do modal de pesquisa */
+      #search-content {
+      position: fixed;
+      top: -100%; /* Inicialmente fora da tela */
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9998; /* Garante que o modal fique acima de tudo */
+      backdrop-filter: blur(16px); /* Efeito de desfoque no fundo */
+      padding: 8rem 1.5rem; /* Ajuste no padding para centralizar */
+      transition: top 0.4s; /* Transição suave para o top */
+      }
+      /* Quando o modal está visível */
+      #search-content.show {
+      top: 0; /* Modal aparece */
+      }
+      /* Caixa de pesquisa */
+      .search__input {
+      width: 100%;
+      padding: 1rem; /* Padding ajustado */
+      background-color: var(--container-color); /* Cor de fundo */
+      color: var(--text-color); /* Cor do texto */
+      font-size: 18px;
+      border: 2px solid var(--border-color);
+      border-radius: 5px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      outline: none;
+      transition: border-color 0.3s ease;
+      }
+      /* Estilo quando o campo de pesquisa está em foco */
+      .search__input:focus {
+      border-color: #007BFF; /* Adiciona um foco azul */
+      }
+      /* Estilo dos resultados da pesquisa */
+      .search__results {
+      width: 100%;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 15px;
+      border-radius: 5px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 10px;
+      }
+      /* Estilo de cada item de resultado */
+      .search__result-item {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      transition: background-color 0.3s ease;
+      }
+      /* Hover nos resultados da pesquisa */
+      .search__result-item:hover {
+      background-color: #f5f5f5;
+      }
+      .search__result-item img {
+      width: 50px;
+      height: 75px;
+      margin-right: 15px;
+      border-radius: 5px;
+      }
+      /* Estilo do título de cada item de resultado */
+      .search__result-item h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: #574a4a;
+      }
+      /* Botão de fechar o modal */
+      #search-close {
+      background: transparent; /* Fundo transparente */
+      color: var(--title-color); /* Cor do título */
+      border: none;
+      padding: 10px 15px;
+      border-radius: 50%;
+      cursor: pointer;
+      position: absolute;
+      top: 2rem;
+      right: 2rem;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+      }
+      /* Hover no botão de fechar */
+      #search-close:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+      }
+      /* Ícone da pesquisa */
+      .search__icon {
+      font-size: 1.25rem;
+      color: var(--title-color);
+      }
+      /* Animação para mostrar o modal de pesquisa */
+      .show-search {
+      top: 0;
+      }
+      .book-details-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      }
+      .book-details-modal__content {
+      background: rgba(255, 255, 255, 0.2); /* Fundo semi-transparente */
+      backdrop-filter: blur(10px); /* Efeito de desfoque */
+      -webkit-backdrop-filter: blur(10px); /* Compatibilidade com Safari */
+      padding: 20px;
+      max-width: 600px;
+      width: 90%;
+      text-align: center;
+      border-radius: 16px; /* Bordas arredondadas */
+      border: 1px solid rgba(255, 255, 255, 0.3); /* Borda sutil */
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25); /* Sombra suave */
+      color: #fff; /* Texto branco para contraste */
+      }
+      .book-details-modal img {
+      max-width: 150px;
+      height: auto;
+      margin-bottom: 20px;
+      display: inline;
+      }
+      .close-details-btn {
+      background-color: #ff5c5c;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+      }
+      .close-details-btn:hover {
+      background-color: #ff3333;
+      }
+      /* Botão de configurações do usuário */
+      #add-book-button {
+      background-color: var(--container-color); /* Mesma cor de fundo */
+      color: var(--title-color); /* Cor do texto */
+      border: none;
+      border-radius: 50%;
+      padding: 0.50rem;
+      font-size: 1rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      margin-right: 0.20rem; /* Espaçamento entre os ícones */
+      }
+      /* Hover no botão de configurações */
+      #add-book-button:hover {
+      background-color: var(--first-color); /* Destaque na cor principal */
+      color: var(--container-color); /* Contraste no texto */
+      }
+      /* Estilo do ícone dentro do botão */
+      #add-book-button i {
+      pointer-events: none; /* Garante que apenas o botão capture os cliques */
+      }
+      button.disabled {
+      background-color: green; /* Cor verde */
+      color: white; /* Cor do texto */
+      cursor: not-allowed; /* Cursor desativado */
+      }
+    </style>
+    </header>
+    <!--==================== MAIN ====================-->
+    <main class="main">
+    <!--==================== HOME ====================-->
+    <section class="home section" id="home">
+      <div class="home__container container grid">
+        <div class="home__data">
+          <h1 class="home__title">
+            Browse & <br>
+            Trade Books
+          </h1>
+          <p class="home__description">
+            Find the best books from your favorite
+            writers, explore hundreds of books with all
+            possible categories, take advantage of the
+            trades and much more.
+          </p>
+          <a href="{{ url_for('recommend') }}" class="button">Start Trading Now</a>
+        </div>
+        <div class="home__images">
+          <div class="home__swiper swiper">
+            <div class="swiper-wrapper">
+              <article class="home__article swiper-slide">
+                <img src="{{ url_for('static', filename='home_page/home-book-1.png') }}" alt="Book 1" class="home__img">
+              </article>
+              <article class="home__article swiper-slide">
+                <img src="{{ url_for('static', filename='home_page/home-book-2.png') }}" alt="Book 2" class="home__img">
+              </article>
+              <article class="home__article swiper-slide">
+                <img src="{{ url_for('static', filename='home_page/home-book-3.png') }}" alt="Book 3" class="home__img">
+              </article>
+              <article class="home__article swiper-slide">
+                <img src="{{ url_for('static', filename='home_page/home-book-4.png') }}" alt="Book 4" class="home__img">
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!--==================== TRADE ====================-->
+    <section class="services section">
+      <div class="services__container container grid">
+        <article class="services__card">
+          <i class="ri-truck-line"></i>
+          <h3 class="services__title">Trade and Order</h3>
+          <p class="services__description">Trade books all across the globe!</p>
+        </article>
+        <article class="services__card">
+          <i class="ri-lock-2-line"></i>
+          <h3 class="services__title">Secure Trades</h3>
+          <p class="services__description">100% Secure Confirmation</p>
+        </article>
+        <article class="services__card">
+          <i class="ri-customer-service-2-line"></i>
+          <h3 class="services__title">24/7 Support</h3>
+          <p class="services__description">Contact us any time: <strong><u>booksupport@hotmail.com</u></strong></p>
+        </article>
+      </div>
+    </section>
+    <!--==================== RECOMMENDED ====================-->
+    <section class="featured section" id="featured">
+      <h2 class="section__title">
+        Recommended Books
+      </h2>
+      <div class="featured__container container">
+        <div class="featured__swiper swiper">
+          <div class="swiper-wrapper">
+            {% for book in featured_books %}
+            <article class="featured__card swiper-slide">
+              <img src="{{ url_for('static', filename='home_page/book-1.png') }}" alt="image" class="featured__img">
+              <h2 class="featured__title">{{ book.title }}</h2>
+            </article>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <!-- Explore Button -->
+      <div class="explore-button-container">
+        <a href="#" class="button explore-button">See Recomendations</a>
+      </div>
+    </section>
+    <!--==================== TRADE ====================-->
+    <section class="discount section" id="discount">
+      <div class="discount__container container grid">
+        <div class="discount__data">
+          <h2 class="discount__title section__title">
+            Start trading today!
+          </h2>
+          <p class="discount__description">
+            Take advantage of the trades we have
+            for you, buy books from your favorite
+            writers, the more you trade, the more
+            offers we have for you.
+          </p>
+          <a href="{{ url_for('trade') }}" class="button">Trade Now</a>
+        </div>
+        <div class="discount__images">
+          <img src="{{ url_for('static', filename='home_page/discount-book-1.png') }}" alt="Discount Book 1" class="discount__img-1">
+          <img src="{{ url_for('static', filename='home_page/discount-book-2.png') }}" alt="Discount Book 2" class="discount__img-2">
+        </div>
+      </div>
+    </section>
+    <!--==================== NEW BOOKS ====================-->
+    <section class="new section" id="new">
+      <h2 class="section__title">
+        Wishlist
+      </h2>
+      <!-- Contêiner para centralizar o botão -->
+      <div class="wishlist-button-container">
+        <a href="/wishlist" class="wishlist-button">See all my Wishlist</a>
+      </div>
+      <div class="new__container container">
+        <div class="new__swiper">
+          <div>
+            <a href="#" class="new__card">
+              <img src="{{ url_for('static', filename='home_page/book-1.png') }}" alt="Wishlist Book" class="new__img">
+              <div id="request-change-div">
+                <h2 class="new__title">Request Change</h2>
+                <div class="new__stars">
+                  <i class="ri-star-fill"></i>
+                  <i class="ri-star-fill"></i>
+                  <i class="ri-star-fill"></i>
+                  <i class="ri-star-fill"></i>
+                  <i class="ri-star-half-fill"></i>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!--==================== SEARCH ====================-->
+    <div id="search-content">
+      <div>
+        <button id="search-close">x</button>
+        <input type="text" class="search__input" placeholder="What are you looking for?" value="{{ query }}">
+        <div id="search-results" class="search__results">
+          {% if books %}
+          {% for book in books %}
+          <div class="search__result-item" 
+            data-book-id="{{ book[0] }}" 
+            data-dateAdded="{{ book[5] }}" 
+            data-user_name="{{ book[6] }}"
+            data-in-wishlist="{% if book[0] in wishlist_ids %}true{% else %}false{% endif %}"
+            data-in-tradelist="{% if book[0] in tradelist_ids %}true{% else %}false{% endif %}">
+            <img src="{{ book[4] }}" alt="{{ book[1] }}">
+            <div>
+              <h3>{{ book[1] }}</h3>
+              <p>{{ book[2] }} - {{ book[3] }}</p>
+            </div>
+          </div>
+          {% endfor %}
+          {% else %}
+          <p>No results found</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <!--==================== BOOK DETAILS MODAL ====================-->
+    <div class="book-details-modal" id="book-details-modal">
+      <div class="book-details-modal__content">
+        <img id="book-image" src="" alt="Book Image">
+        <h3 id="book-title"></h3>
+        <p><strong>Author:</strong> <span id="book-author"></span></p>
+        <p><strong>Genre:</strong> <span id="book-genre"></span></p>
+        <p><strong>Added on:</strong> <span id="book-dateAdded"></span></p>
+        <button class="close-details-btn" id="close-details-btn">Close</button>
+        <form method="POST" action="/recommend">
+          <input type="hidden" name="book_id" id="modal-book-id" value="">
+          <button type="submit" class="close-details-btn">Add to Wishlist</button>
+        </form>
+        <button type="submit" id="request-change-button" class="close-details-btn">Request Change</button>
+      </div>
+    </div>
+    <!--=============== SWIPER JS ===============-->
+    <script src="{{ url_for('static', filename='home_page/swiper-bundle.min.js') }}"></script>
+    <!--=============== MAIN JS ===============-->
+    <script src="{{ url_for('static', filename='home_page/main.js') }}"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+          const searchInput = document.querySelector('.search__input');
+          const searchContent = document.querySelector('#search-content');
+          const searchResultsContainer = document.querySelector('#search-results');
+      
+          // Abrir conteúdo pesquisa
+          document.getElementById('search-button').addEventListener('click', () => {
+              searchContent.classList.add('show');
+          });
+      
+          // Fechar conteúdo pesquisa
+          document.getElementById('search-close').addEventListener('click', () => {
+              searchContent.classList.remove('show');
+          });
+      
+          addBookDetailsEventListeners();
+      
+          // Busca dinâmica com atualização em tempo real
+          searchInput.addEventListener('input', async function () {
+              const query = this.value.trim();
+      
+              try {
+                  const response = await fetch(`/home?q=${encodeURIComponent(query)}`);
+                  const parser = new DOMParser();
+                  const html = await response.text();
+      
+                  const doc = parser.parseFromString(html, "text/html");
+                  const newResults = doc.querySelector("#search-results").innerHTML;
+      
+                  searchResultsContainer.innerHTML = newResults;
+      
+                  addBookDetailsEventListeners();
+              } catch (error) {
+                  console.error("Error fetching search results:", error);
+                  searchResultsContainer.innerHTML = '<p>Failed to fetch results. Please try again later.</p>';
+              }
+          });
+          
+          // Exibe detalhes do livro e ajusta botões no modal
+          function addBookDetailsEventListeners() {
+              const bookItems = document.querySelectorAll('.search__result-item');
+              bookItems.forEach(bookCard => {
+                  bookCard.addEventListener('click', function () {
+                      const book = {
+                          id: this.getAttribute('data-book-id'),
+                          title: this.querySelector('h3').textContent,
+                          author: this.querySelector('p').textContent.split(' - ')[0],
+                          genre: this.querySelector('p').textContent.split(' - ')[1],
+                          image: this.querySelector('img').src,
+                          dateAdded: this.getAttribute('data-dateAdded'),
+                          inWishlist: this.getAttribute('data-in-wishlist') === 'true',
+                          inTradelist: this.getAttribute('data-in-tradelist') === 'true' 
+                      };
+      
+                      document.getElementById('book-title').textContent = book.title;
+                      document.getElementById('book-author').textContent = book.author;
+                      document.getElementById('book-genre').textContent = book.genre;
+                      document.getElementById('book-image').src = book.image;
+                      document.getElementById('book-dateAdded').textContent = book.dateAdded;
+                      document.getElementById('modal-book-id').value = book.id;
+                     
+                      // Alterar o botão com base no estado da wishlist
+                     const wishlistButton = document.querySelector('form[action="/recommend"] button[type="submit"]');
+                     if (book.inWishlist) {
+                        wishlistButton.textContent = "Already Added";
+                        wishlistButton.disabled = true;
+                        wishlistButton.classList.add("disabled");
+                     } else {
+                        wishlistButton.textContent = "Add to Wishlist";
+                        wishlistButton.disabled = false;
+                        wishlistButton.classList.remove("disabled");
+                     }
+      
+                     // Alterar o botão "Request to Exchange" com base no estado da tradelist
+                     const requestChangeButton = document.getElementById('request-change-button');
+                     if (book.inTradelist) {
+                        requestChangeButton.textContent = "Already on your Tradelist";
+                        requestChangeButton.disabled = true; // Desabilita o botão
+                        requestChangeButton.classList.add("disabled");
+                     } else {
+                        requestChangeButton.textContent = "Request to Exchange";
+                        requestChangeButton.disabled = false; // Habilita o botão
+                        requestChangeButton.classList.remove("disabled");
+                     }
+      
+                      document.getElementById('book-details-modal').style.display = 'flex';
+                  });
+              });
+          }
+      
+          // Fecha o modal
+          document.getElementById('close-details-btn').addEventListener('click', function () {
+              document.getElementById('book-details-modal').style.display = 'none';
+          });
+      
+          // Funcionalidade do request
+          const requestChangeButton = document.getElementById('request-change-button');
+          if (requestChangeButton) {
+              requestChangeButton.addEventListener('click', function (event) {
+                  event.preventDefault(); // Impede o comportamento padrão do botão de submit
+      
+                  const bookId = document.getElementById('modal-book-id').value; // Obtém o ID do livro do modal
+      
+                  // Criar um formulário para simular a requisição POST
+                  const form = document.createElement('form');
+                  form.method = 'POST';
+                  form.action = '/request-change'; // O URL para o qual o formulário será enviado
+      
+                  // Adicionar o campo oculto com o ID do livro
+                  const hiddenField = document.createElement('input');
+                  hiddenField.type = 'hidden';
+                  hiddenField.name = 'book_id';
+                  hiddenField.value = bookId;
+      
+                  form.appendChild(hiddenField);
+                  document.body.appendChild(form);
+      
+                  // Submeter o formulário
+                  form.submit();
+              });
+          }
+      });
+      
+      // Apagar as mensagens Flash após 3 segundos
+      document.addEventListener("DOMContentLoaded", () => {
+         const flashMessages = document.querySelectorAll(".flash-messages .alert");
+      
+         flashMessages.forEach(message => {
+            setTimeout(() => {
+               message.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+               message.style.opacity = "0";
+               message.style.transform = "translateY(-10px)";
+               setTimeout(() => message.remove(), 500);
+            }, 3000); // 3 segundos antes de desaparecer
+         });
+      });
+            
+    </script>
+    <script>
+      // Verifica se o 'request-change-div' existe e configura o evento de clique
+      const requestChangeDiv = document.getElementById('request-change-div');
+      if (requestChangeDiv) {
+         requestChangeDiv.addEventListener('click', function() {
+              // Redireciona o usuário para a rota '/wishlist'
+            window.location.href = '/wishlist';  
+         });
+      }
+    </script>  
+  </body>
+</html>
