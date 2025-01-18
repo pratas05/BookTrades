@@ -50,8 +50,8 @@ SQLite is already included with Python, but you can optionally install a databas
 ### Step 3: Set Up a Virtual Environment
 Using a virtual environment is recommended to avoid conflicts between dependencies.
 
-Windows:
-1. Open a terminal in VSCode by pressing Ctrl + \`` (backtick) or navigating to Terminal > New Terminal`.
+### Windows:
+1. Open a terminal in VSCode by navigating to Terminal > New Terminal.
 2. Run the following command to create a virtual environment:
    ```bash
     py -3 -m venv .venv
@@ -61,3 +61,84 @@ Windows:
     .venv\Scripts\activate
    
 4. You should see (venv) at the beginning of your terminal line.
+
+### Linux/macOS:
+1. Open a terminal in VSCode by navigating to Terminal > New Terminal.
+2. Run the following command to create a virtual environment:
+   ```bash
+    python3 -m venv venv
+
+3. Activate the virtual environment:
+   ```bash  
+    . .venv/bin/activate
+
+4. You should see (venv) at the beginning of your terminal line.
+
+
+### Step 4: Install Dependencies
+1. With the virtual environment activated, install the necessary Python libraries:
+   ```bash  
+    pip install flask
+    pip install flask-login
+    pip install bcrypt
+
+Advice: If you have problems with environment variables that may have already been created previously in your project, you should delete the ".venv" folder and create your environment variable again following the previous steps    
+
+
+### Step 5: Set Up the Database
+If the database file (`book_trade.db`) already exists, you can skip this step. However, if you need to initialize or set up the database, follow these instructions:
+
+1. Ensure the `book_trade.db` file is present in your project directory.
+2. If the database doesn't exist or needs to be initialized, run the following command to set it up:  
+   ```bash
+    python setup_database.py
+
+This will create or update the book_trade.db file with the necessary tables and schema.
+
+Note: If the database already exists and has data, running this script may overwrite the existing database. Make sure to back up your data if needed.
+
+
+### Step 6: Start the Application
+1. Run the Flask development server:
+   ```bash
+    python app.py
+    
+2. By default, the application will be accessible at http://127.0.0.1:5000.
+
+3. Make sure app.py contains your entire backend correctly or if you have your code in another python file. If this is the case, replace app.py with your correct file:
+   ```bash
+    python your_folder_name.py
+
+
+## Contributing  
+Contributions are always welcome! Please follow these steps to contribute to the project:
+
+1. **Fork** the repository to your own GitHub account.
+2. **Clone** your fork to your local machine:
+   ```bash
+    git clone https://github.com/yourusername/book-exchange-platform.git
+
+3. Create a new branch for your feature or bugfix:
+   ```bash
+    git checkout -b feature-name
+
+4. Make your changes and test thoroughly. Commit your changes with a descriptive message:
+   ```bash
+    git commit -am 'Add new feature or fix bug'
+
+5. Push your branch to your forked repository:
+   ```bash
+    git push origin feature-name
+
+
+6. Submit a pull request to the main repository for review.
+
+We encourage you to open an issue if you encounter any bugs or have suggestions for improvements.
+
+
+### License
+This project is licensed under the MIT License.
+
+
+### Contact
+For questions or feedback, please contact afmpratas@gmail.com

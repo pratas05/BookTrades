@@ -8,7 +8,7 @@ from datetime import date
 from database import init_db
 
 app = Flask(__name__, static_folder='static')
-app.config['SECRET_KEY'] = '3244'  # Substituir por uma chave secreta segura
+app.config['SECRET_KEY'] = 'book_trade_123'  # Substituir por uma chave secreta segura
 
 # Configuração do Flask-Login
 login_manager = LoginManager(app)
@@ -27,7 +27,7 @@ init_db()
 # Carregar utilizador para o Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
-    conexion = sqlite3.connect('users.db')
+    conexion = sqlite3.connect('book_trade.db')
     cursor = conexion.cursor()
     cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,))
     user = cursor.fetchone()
@@ -59,7 +59,7 @@ def login():
             else:
                 hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
                 try:
-                    conexion = sqlite3.connect('users.db')
+                    conexion = sqlite3.connect('book_trade.db')
                     cursor = conexion.cursor()
                     cursor.execute('INSERT INTO users (name, email, password) VALUES (?, ?, ?)', 
                     (name, email, hashed_password.decode('utf-8')))
@@ -75,7 +75,7 @@ def login():
             email = request.form['signinEmail']
             password = request.form['signinPassword']
 
-            conexion = sqlite3.connect('users.db')
+            conexion = sqlite3.connect('book_trade.db')
             cursor = conexion.cursor()
             cursor.execute('SELECT * FROM users WHERE email = ?', (email,))
             user = cursor.fetchone()
@@ -100,7 +100,7 @@ def login():
 def home():
     query = request.args.get('q', '')  # Obtém o valor da pesquisa (parâmetro 'q')
 
-    conn = sqlite3.connect('users.db')
+    conn = sqlite3.connect('book_trade.db')
     cursor = conn.cursor()
 
     try:
@@ -141,7 +141,7 @@ def recommend():
 
         # Conectar ao banco de dados
         try:
-            conexion = sqlite3.connect('users.db')
+            conexion = sqlite3.connect('book_trade.db')
             cursor = conexion.cursor()
 
             # Verificar se o livro já está na wishlist do usuário
@@ -164,7 +164,7 @@ def recommend():
 
     try:
         # Recuperar os livros com dados do usuário
-        conexion = sqlite3.connect('users.db')
+        conexion = sqlite3.connect('book_trade.db')
         cursor = conexion.cursor()
 
         # Buscar todos os livros
@@ -203,7 +203,7 @@ def request_change():
     user_id = current_user.id
 
     # Conectar ao banco de dados
-    conexion = sqlite3.connect('users.db')
+    conexion = sqlite3.connect('book_trade.db')
     cursor = conexion.cursor()
 
     try:
@@ -240,7 +240,7 @@ def request_change():
 @login_required
 def trade():
     # Conectar ao banco de dados
-    conexion = sqlite3.connect('users.db')
+    conexion = sqlite3.connect('book_trade.db')
     cursor = conexion.cursor()
 
     # Consulta para obter livros que estão na tradelist do usuário logado
@@ -270,7 +270,7 @@ def create_offer():
         return "Missing tradelistBookId or targetBookId", 400
 
     # Conectar ao banco de dados
-    conexion = sqlite3.connect('users.db')
+    conexion = sqlite3.connect('book_trade.db')
     cursor = conexion.cursor()
 
     try:
@@ -361,7 +361,7 @@ def get_all_books():
 
 def get_all_books_from_db(user_id):
     # Conectar ao banco de dados SQLite (ou ao seu banco de dados apropriado)
-    conn = sqlite3.connect('users.db')  # Substitua pelo caminho real do seu banco de dados
+    conn = sqlite3.connect('book_trade.db')  # Substitua pelo caminho real do seu banco de dados
     cursor = conn.cursor()
 
     # Consulta para pegar todos os livros
@@ -397,7 +397,7 @@ def wishlist():
 
         try:
             # Conectando ao banco de dados
-            conexion = sqlite3.connect('users.db')
+            conexion = sqlite3.connect('book_trade.db')
             cursor = conexion.cursor()
 
             # Remover o livro da wishlist do usuário
@@ -410,7 +410,7 @@ def wishlist():
             conexion.close()
 
     # Recuperar os livros com dados do usuário da wishlist
-    conexion = sqlite3.connect('users.db')
+    conexion = sqlite3.connect('book_trade.db')
     cursor = conexion.cursor()
     cursor.execute(''' 
         SELECT b.id, b.author, b.title, b.genre, b.dateAdded, b.image_url
@@ -457,7 +457,7 @@ def user():
 
         try:
             # Inserindo os dados na tabela 'books'
-            conexion = sqlite3.connect('users.db')
+            conexion = sqlite3.connect('book_trade.db')
             cursor = conexion.cursor()
             cursor.execute('INSERT INTO books (id, title, author, genre, image_url, user_id, dateAdded) VALUES (?, ?, ?, ?, ?, ?, ?)', 
                         (book_id, title, author, genre, image_url, current_user.id, formatted_date))
@@ -477,7 +477,7 @@ def user_view():
     user_id = current_user.id  # Flask-Login cuida disso
 
     # Conectar ao banco de dados e obter os dados do usuário
-    conn = sqlite3.connect('users.db')
+    conn = sqlite3.connect('book_trade.db')
     conn.row_factory = sqlite3.Row  # Para obter as colunas como dicionários
     user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
     conn.close()
@@ -497,7 +497,7 @@ def user_view():
             return redirect(url_for('user_view'))
 
         # Atualizar os dados no banco de dados
-        conn = sqlite3.connect('users.db')
+        conn = sqlite3.connect('book_trade.db')
 
         # Se o telefone for preenchido, atualiza o campo phone, caso contrário, não altera
         if phone:
@@ -525,7 +525,7 @@ def user_view():
 @login_required
 def offer():
     # Conectar ao banco de dados
-    conexion = sqlite3.connect('users.db')
+    conexion = sqlite3.connect('book_trade.db')
     cursor = conexion.cursor()
 
     if request.method == 'POST':

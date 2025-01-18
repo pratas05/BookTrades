@@ -1,7 +1,7 @@
 import sqlite3
 
 def init_db():
-    conexion = sqlite3.connect('users.db')
+    conexion = sqlite3.connect('book_trade.db')
     cursor = conexion.cursor()
 
     # Tabela de usuários
