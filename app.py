@@ -10,7 +10,7 @@ from database import init_db
 app = Flask(__name__, static_folder='static')
 app.config['SECRET_KEY'] = 'book_trade_123'  # Substituir por uma chave secreta segura
 
-# Configuração do Flask-Login
+# Flask Login Configuration
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -469,57 +469,110 @@ def user():
 
     return render_template('add_book.html')
 
-####### ROTA EXTRA PARA O UTILIZADOR CONFIGURAR ALGUMAS INFORMAÇÕES PESSOAIS. É feito na página home.html
+######## ROTA EXTRA PARA O UTILIZADOR CONFIGURAR ALGUMAS INFORMAÇÕES PESSOAIS. É feito na página home.html
 @app.route('/user', methods=['GET', 'POST'])
 @login_required
 def user_view():
-    # Usando o current_user para obter o ID do usuário logado
+    # Obtendo o ID do usuário logado
     user_id = current_user.id  # Flask-Login cuida disso
 
-    # Conectar ao banco de dados e obter os dados do usuário
+    # Conectar ao banco de dados para obter os dados do usuário
     conn = sqlite3.connect('book_trade.db')
     conn.row_factory = sqlite3.Row  # Para obter as colunas como dicionários
     user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
-    conn.close()
 
     if not user:
+        conn.close()
         flash('User not found.', 'danger')
         return redirect(url_for('home'))
 
-    if request.method == 'POST':
-        # Obter os dados do formulário
-        name = request.form['name']
-        phone = request.form.get('phone')  # phone é opcional
+    # Consultar livros adicionados pelo usuário
+    books = conn.execute('SELECT * FROM books WHERE user_id = ?', (user_id,)).fetchall()
+    conn.close()
 
-        # Verificação de dados
-        if not name:
-            flash('Name is obrigatiroty!', 'danger')
+    if request.method == 'POST':
+        if 'remove_book' in request.form:  # Verifica se é uma ação de remoção
+            book_id = request.form.get('book_id')
+
+            if not book_id:
+                flash('Book ID is required to remove a book.', 'danger')
+                return redirect(url_for('user_view'))
+
+            # Verificar se o livro pertence ao usuário atual antes de remover
+            conn = sqlite3.connect('book_trade.db')
+            try:
+                result = conn.execute(
+                    'DELETE FROM books WHERE id = ? AND user_id = ?',
+                    (book_id, user_id)
+                )
+                conn.commit()
+
+                if result.rowcount > 0:
+                    flash('Book removed successfully!', 'success')
+                else:
+                    flash('Book not found or does not belong to you.', 'danger')
+
+            except sqlite3.Error as e:
+                flash('An error occurred while removing the book.', 'danger')
+                print(f"Database error: {e}")  # Log para debug
+
+            finally:
+                conn.close()
+
             return redirect(url_for('user_view'))
 
-        # Atualizar os dados no banco de dados
-        conn = sqlite3.connect('book_trade.db')
+        else:  # Atualização de informações do usuário
+            name = request.form.get('name', '').strip()  # Remover espaços em branco extras
+            phone = request.form.get('phone', '').strip()
 
-        # Se o telefone for preenchido, atualiza o campo phone, caso contrário, não altera
-        if phone:
-            conn.execute('''
-                UPDATE users
-                SET name = ?, phone = ?
-                WHERE id = ?
-            ''', (name, phone, user_id))
-        else:
-            conn.execute('''
-                UPDATE users
-                SET name = ?
-                WHERE id = ?
-            ''', (name, user_id))
+            # Verificação de dados obrigatórios
+            if not name:
+                flash('Name is mandatory!', 'danger')
+                return redirect(url_for('user_view'))
 
-        conn.commit()
-        conn.close()
+            # Validação do número de telefone
+            if phone and not phone.isdigit():
+                flash('Phone number must contain only digits.', 'danger')
+                return redirect(url_for('user_view'))
+            if phone and len(phone) != 9:
+                flash('Phone number must be exactly 9 digits.', 'danger')
+                return redirect(url_for('user_view'))
+            phone = phone if phone else None  # Salvar como NULL se o campo estiver vazio
 
-        flash('Your information was updated successfully!', 'success')
-        return redirect(url_for('user_view'))
+            # Verificar se houve alteração nos dados
+            if name == user['name'] and phone == user['phone']:
+                flash('No changes detected. The same data cannot be saved.', 'danger')
+                return redirect(url_for('user_view'))
 
-    return render_template('user.html', user=user)
+            # Atualizar os dados na base de dados
+            conn = sqlite3.connect('book_trade.db')
+            try:
+                conn.execute(''' 
+                    UPDATE users 
+                    SET name = ?, phone = ? 
+                    WHERE id = ? 
+                ''', (name, phone, user_id))
+
+                conn.commit()
+                flash('Your information was updated successfully!', 'success')
+
+            except sqlite3.Error as e:
+                flash('An error occurred while updating your information.', 'danger')
+                print(f"Database error: {e}")  # Log para debug
+
+            finally:
+                conn.close()
+
+            return redirect(url_for('user_view'))
+
+    # Garantir que o valor de phone seja tratado como string vazia se for NULL
+    user_dict = dict(user)
+    user_dict['phone'] = user_dict['phone'] if user_dict['phone'] else ''
+
+    # Transformar livros em lista de dicionários
+    books_list = [dict(book) for book in books]
+
+    return render_template('user.html', user=user_dict, books=books_list)
 
 @app.route('/offer', methods=['GET', 'POST'])
 @login_required
@@ -596,7 +649,7 @@ def offer():
         ''', (current_user.id,))
         received_offers = cursor.fetchall()
 
-        # Renderizar a página
+        # Render Template
         return render_template('offer.html', sent_offers=sent_offers, received_offers=received_offers)
 
     except Exception as e:

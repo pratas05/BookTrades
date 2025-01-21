@@ -4,17 +4,18 @@ def init_db():
     conexion = sqlite3.connect('book_trade.db')
     cursor = conexion.cursor()
 
-    # Tabela de usuários
+    # Users Table
     cursor.execute(''' 
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             email TEXT NOT NULL UNIQUE,
-            password TEXT NOT NULL
+            password TEXT NOT NULL, 
+            phone TEXT 
         )
     ''')
 
-    # Tabela de livros
+    # Books Table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS books (
             id TEXT PRIMARY KEY,
@@ -28,7 +29,7 @@ def init_db():
         )
     ''')
 
-    # Tabela de desejos
+    # Wishlist Table
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS wishlist (
         id TEXT PRIMARY KEY,              
@@ -40,7 +41,7 @@ def init_db():
     )
     ''')
 
-    # Tabela de trocas
+    # Exchange Table
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS tradelist (
         id TEXT PRIMARY KEY,              
@@ -52,7 +53,7 @@ def init_db():
     )
     ''')
 
-    #Tabela para ofertas
+    # Offers Table (for the trade request)
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS offer (
         id TEXT PRIMARY KEY,
