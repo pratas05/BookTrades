@@ -12,6 +12,7 @@ The platform promotes sustainable reading practices and fosters a sense of commu
 - Search functionality to find specific titles or genres.  
 - Arrange exchanges with other users.
 - Wishlist page to save yout favorite books
+- Remove your books from the app, if you change your mind.
 
 ## Technologies Used  
 - **Frontend**: HTML, CSS, JavaScript  
@@ -82,13 +83,14 @@ Using a virtual environment is recommended to avoid conflicts between dependenci
     pip install flask-login
     pip install bcrypt
 
-Advice: If you have problems with environment variables that may have already been created previously in your project, you should delete the ".venv" folder and create your environment variable again following the previous steps    
+Advice: If you have problems with environment variables that may have already been created previously in your project, you should delete the ".venv" folder and create your environment variable again following the previous steps. 
 
 
 ### Step 5: Set Up the Database
 If the database file (`book_trade.db`) already exists, you can skip this step. However, if you need to initialize or set up the database, follow these instructions:
 
 1. Ensure the `book_trade.db` file is present in your project directory.
+
 2. If the database doesn't exist or needs to be initialized, run the following command to set it up:  
    ```bash
     python setup_database.py
@@ -108,6 +110,8 @@ Note: If the database already exists and has data, running this script may overw
 3. Make sure app.py contains your entire backend correctly or if you have your code in another python file. If this is the case, replace app.py with your correct file:
    ```bash
     python your_folder_name.py
+
+If you already has your environment variables set in your local machine, you need only run the command to start the app. 
 
 
 ## Contributing  
@@ -137,8 +141,5 @@ We encourage you to open an issue if you encounter any bugs or have suggestions 
 
 
 ### License
-This project is licensed under the MIT License.
+This project is licensed under the MIT License. See the LICENSE file for more information.
 
-
-### Contact
-For questions or feedback, please contact afmpratas@gmail.com
