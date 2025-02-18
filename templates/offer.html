@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='wishlist_page/swiper-bundle.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='wishlist_page/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='add_book_page/styles.css') }}">
+    <title>BookTrades</title>
+    <style>
+      body {
+      background-color: var(--body-color);
+      color: var(--text-color);
+      }
+      body.dark-mode {
+      --title-color: hsl(230, 48%, 85%);
+      --text-color: hsl(230, 16%, 70%);
+      --border-color: hsl(230, 12%, 18%);
+      --body-color: hsl(230, 12%, 8%);
+      --container-color: hsl(230, 12%, 12%);
+      }
+      button {
+      background-color: var(--first-color);
+      color: var(--white-color);
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+      }
+      button:hover {
+      background-color: hsl(230, 62%, 40%);
+      }
+      button.disabled {
+      background-color: green;
+      color: white;
+      cursor: not-allowed;
+      }
+      /* Estilos de layout */
+      .grid-layout {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      }
+      /* Cartões */
+      .book-card, .offer-card {
+      background: var(--container-color);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+      }
+      .book-card:hover, .offer-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+      body.dark-theme .book-card, body.dark-theme .offer-card {
+      background-color: hsl(230, 12%, 12%);
+      color: hsl(230, 48%, 85%);
+      border: 1px solid hsl(230, 12%, 25%);
+      box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+      }
+      body.dark-theme .book-card:hover, body.dark-theme .offer-card:hover {
+      box-shadow: 0 6px 12px rgba(255, 255, 255, 0.2);
+      }
+      /* Imagens */
+      .book-card__image, .uniform-size {
+      width: 120px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 4px;
+      }
+      .book-image {
+      max-width: 130px;
+      max-height: 170px;
+      margin: 10px auto;
+      display: block;
+      border-radius: 8px;
+      object-fit: contain;
+      }
+      /* Títulos e autores */
+      .book-card__title {
+      font-size: 1rem;
+      margin: 10px 0 5px;
+      }
+      .book-card__author {
+      font-size: 0.875rem;
+      color: #555;
+      }
+      /* Modais */
+      .genres-modal, .book-details-modal, .offer-details-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1001;
+      background-color: rgba(0, 0, 0, 0.7);
+      }
+      .genres-modal__content, .book-details-modal__content, .offer-details-modal__content {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      width: 500px;
+      max-width: 90%;
+      min-height: 300px;
+      max-height: 80vh;
+      text-align: center;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column; /* Organiza o conteúdo na vertical */
+      align-items: center; /* Alinha horizontalmente ao centro */
+      }
+      .offer-details-modal__content {
+      max-width: 450px;
+      max-height: 100vh;
+      color: #f5f5f5;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      /* Botões */
+      .close-details-btn, .wishlist-button, .action-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px;
+      transition: transform 0.2s ease, background-color 0.3s ease;
+      }
+      .close-details-btn {
+      background-color: red;
+      color: white;
+      }
+      .close-details-btn:hover {
+      background-color: darkred;
+      }
+      .wishlist-button {
+      background-color: #5865f2;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      text-decoration: none;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .wishlist-button:hover {
+      background-color: #4752c4;
+      transform: translateY(-2px);
+      }
+      .wishlist-button:active {
+      background-color: #3c44a8;
+      transform: translateY(0);
+      }
+      .dark-mode-btn {
+      background-color: #333;
+      color: #fff;
+      border: 1px solid #555;
+      }
+      .dark-mode-btn:hover {
+      background-color: #555;
+      color: #ddd;
+      }
+      /* Flash messages */
+      .flash-container {
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      z-index: 1000;
+      max-width: 300px;
+      }
+      .flash-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      }
+      .alert {
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-size: 14px;
+      color: #fff;
+      animation: fade-in-out 4s ease-in-out;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      opacity: 0.95;
+      }
+      .alert-success {
+      background-color: #28a745;
+      }
+      .alert-danger {
+      background-color: #dc3545;
+      }
+      .alert-warning {
+      background-color: #ffc107;
+      }
+      .alert-info {
+      background-color: #17a2b8;
+      }
+      @keyframes fade-in-out {
+      0%, 90% {
+      opacity: 1;
+      transform: translateY(0);
+      }
+      100% {
+      opacity: 0;
+      transform: translateY(-20px);
+      }
+      }
+      .book-card__image, .book-image {
+      width: 150px;
+      height: 220px;
+      object-fit: cover; /* Garante que a imagem se ajuste sem distorção */
+      border-radius: 8px; /* Bordas arredondadas para uma aparência uniforme */
+      display: block; /* Centralizar caso necessário */
+      margin-left: auto;
+      margin-right: auto;
+      }
+      .offer-actions-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      }
+      .action-buttons-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      width: 100%;
+      max-width: 300px;
+      }
+      .action-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s ease;
+      }
+      .action-btn:hover {
+      opacity: 0.9;
+      }
+      .deny-btn {
+      background-color: #dc3545; /* Red for Deny */
+      color: #fff;
+      }
+      .accept-btn {
+      background-color: #28a745; /* Green for Accept */
+      color: #fff;
+      }
+      .close-btn {
+      background-color: #6c757d; /* Gray for Close */
+      color: #fff;
+      width: 100%;
+      max-width: 150px;
+      text-align: center;
+      }
+      .close-btn:hover {
+      background-color: #5a6268;
+      }
+    </style>
+  </head>
+  <body>
+    <!--==================== HEADER ====================-->
+    <header class="header" id="header">
+      <nav class="nav container">
+        <a href="/home" class="nav__log">
+        <i class="ri-book-3-line"></i> BookTrades
+        </a>
+        <div class="nav__menu">
+          <ul class="nav__list">
+            <li class="nav__item">
+              <a href="{{ url_for('home') }}" class="nav__link">
+              <i class="ri-home-line"></i>
+              <span>Home</span>
+              </a>
+            </li>
+            <li class="nav__item">
+              <a href="{{ url_for('recommend') }}" class="nav__link">
+              <i class="ri-book-3-line"></i>
+              <span>Recomended</span>
+              </a>
+            </li>
+            <li class="nav__item">
+              <a href="{{ url_for('trade') }}" class="nav__link">
+              <i class="ri-price-tag-3-line"></i>
+              <span>Trades</span>
+              </a>
+            </li>
+            <li class="nav__item">
+              <a href="{{ url_for('wishlist') }}" class="nav__link">
+              <i class="ri-bookmark-line"></i>
+              <span>Wishlist</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="nav__actions">
+          <!-- Theme Button -->
+          <i class="ri-moon-line change-theme" id="theme-button"></i>
+        </div>
+      </nav>
+    </header>
+    <main class="main">
+      <section class="home section" id="home">
+        <div class="home__container container grid">
+          <div class="home__data">
+            <h1 class="home__title">My Offers</h1>
+            <p class="home__description">See your current offers</p>
+            <div class="wishlist-button-container">
+              <a href="/trade" class="wishlist-button">Go Back</a>
+            </div>
+          </div>
+          <div class="home__images">
+            <!-- Section for Received Offers -->
+            <div class="offers-section">
+              <h2>Received Offers</h2>
+              <div class="offers-list grid-layout" id="received-offers-list">
+                {% if received_offers %}
+                {% for offer in received_offers %}
+                <div class="offer-card" 
+                  data-offer-id="{{ offer[0] }}" 
+                  data-offered-book="{{ offer[1] }}" 
+                  data-target-book="{{ offer[2] }}" 
+                  data-status="{{ offer[3] }}"
+                  data-offered-book-image="{{ offer[4] }}"
+                  data-target-book-image="{{ offer[5] }}"
+                  data-type="received"
+                  onclick="showOfferDetails(this)">
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <!-- Offered Book Section -->
+                    <div style="text-align: center;">
+                      <p><strong>Offered Book:</strong></p>
+                      <img src="{{ offer[4] }}" class="offer-image" alt="Offered Book Cover" style="width: 100px; height: auto;">
+                    </div>
+                    <!-- Arrow -->
+                    <div style="margin: 0 20px; text-align: center;">
+                      <p style="font-size: 24px;">→</p>
+                    </div>
+                    <!-- Target Book Section -->
+                    <div style="text-align: center;">
+                      <p><strong>Target Book:</strong></p>
+                      <img src="{{ offer[5] }}" class="offer-image" alt="Target Book Cover" style="width: 100px; height: auto;">
+                    </div>
+                  </div>
+                  <p style="text-align: center;"><strong>Status:</strong> {{ offer[3] }}</p>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="no-offers-container">
+                  <p class="no-offers-message">No received offers</p>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+            <!-- Section for Sent Offers -->
+            <div class="offers-section">
+              <h2>Sent Offers</h2>
+              <div class="offers-list grid-layout" id="sent-offers-list">
+                {% if sent_offers %}
+                {% for offer in sent_offers %}
+                <div class="offer-card" 
+                  data-offer-id="{{ offer[0] }}" 
+                  data-offered-book="{{ offer[1] }}" 
+                  data-target-book="{{ offer[2] }}" 
+                  data-status="{{ offer[3] }}"
+                  data-offered-book-image="{{ offer[4] }}"
+                  data-target-book-image="{{ offer[5] }}"
+                  data-type="sent"
+                  onclick="showOfferDetails(this)">
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <!-- Offered Book Section -->
+                    <div style="text-align: center;">
+                      <p><strong>Offered Book:</strong></p>
+                      <img src="{{ offer[4] }}" class="offer-image" alt="Offered Book Cover" style="width: 100px; height: auto;">
+                    </div>
+                    <!-- Arrow -->
+                    <div style="margin: 0 20px; text-align: center;">
+                      <p style="font-size: 24px;">→</p>
+                    </div>
+                    <!-- Target Book Section -->
+                    <div style="text-align: center;">
+                      <p><strong>Target Book:</strong></p>
+                      <img src="{{ offer[5] }}" class="offer-image" alt="Target Book Cover" style="width: 100px; height: auto;">
+                    </div>
+                  </div>
+                  <p style="text-align: center;"><strong>Status:</strong> {{ offer[3] }}</p>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="no-offers-container">
+                  <p class="no-offers-message">No sent offers</p>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </section>
+      <!-- Modal for offer details -->
+      <div class="offer-details-modal" id="offer-details-modal" style="display: none;">
+        <div class="offer-details-modal__content">
+          <h2>Offer Details</h2>
+          <div class="offer-books">
+            <div class="offer-book">
+              <h3>Offered Book</h3>
+              <p id="offered-book"></p>
+              <img id="offered-book-image" class="book-image" style="display: none;">
+            </div>
+            <div class="offer-book">
+              <h3>Target Book</h3>
+              <p id="target-book"></p>
+              <img id="target-book-image" class="book-image" style="display: none;">
+            </div>
+          </div>
+          <p><strong>Status:</strong> <span id="offer-status"></span></p>
+          <!-- Cancel button for sent offers -->
+          <form id="cancel-trade-form" method="POST" action="{{ url_for('offer') }}" style="display: none;">
+            <input type="hidden" name="offer_id" id="cancel-trade-id">
+            <input type="hidden" name="action" value="cancel">
+            <button type="submit" class="cancel-btn close-details-btn">Cancel Trade</button>
+          </form>
+          <!-- Buttons for offer actions -->
+          <div id="received-offer-actions" class="offer-actions-container">
+            <div class="action-buttons-row">
+              <form id="deny-offer-form" method="POST" action="{{ url_for('offer') }}">
+                <input type="hidden" name="offer_id" id="deny-offer-id">
+                <input type="hidden" name="action" value="deny">
+                <button type="submit" class="action-btn deny-btn">Deny</button>
+              </form>
+              <form id="accept-offer-form" method="POST" action="{{ url_for('offer') }}">
+                <input type="hidden" name="offer_id" id="accept-offer-id">
+                <input type="hidden" name="action" value="accept">
+                <button type="submit" class="action-btn accept-btn">Accept</button>
+              </form>
+            </div>
+          </div>
+          <button class="close-details-btn" id="close-details-btn">Close</button>
+        </div>
+      </div>
+      <!-- Flash messages -->
+      <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+      </div>
+    </main>
+    <script>
+      function showOfferDetails(offerElement) {
+          const offer = {
+              id: offerElement.getAttribute('data-offer-id'),
+              offeredBook: offerElement.getAttribute('data-offered-book'),
+              targetBook: offerElement.getAttribute('data-target-book'),
+              status: offerElement.getAttribute('data-status'),
+              offeredBookImage: offerElement.getAttribute('data-offered-book-image'),
+              targetBookImage: offerElement.getAttribute('data-target-book-image'),
+              type: offerElement.getAttribute('data-type')
+          };
+      
+          document.getElementById('offered-book').textContent = offer.offeredBook;
+          document.getElementById('target-book').textContent = offer.targetBook;
+          document.getElementById('offer-status').textContent = offer.status;
+      
+          const offeredImageElement = document.getElementById('offered-book-image');
+          const targetImageElement = document.getElementById('target-book-image');
+      
+          offeredImageElement.src = offer.offeredBookImage;
+          targetImageElement.src = offer.targetBookImage;
+      
+          offeredImageElement.style.display = 'block';
+          targetImageElement.style.display = 'block';
+      
+          if (offer.type === 'sent') {
+              const cancelForm = document.getElementById('cancel-trade-form');
+              cancelForm.style.display = 'block';
+              document.getElementById('cancel-trade-id').value = offer.id;
+              document.getElementById('received-offer-actions').style.display = 'none';
+          } else {
+              document.getElementById('cancel-trade-form').style.display = 'none';
+              document.getElementById('received-offer-actions').style.display = 'block';
+              document.getElementById('accept-offer-id').value = offer.id;
+              document.getElementById('deny-offer-id').value = offer.id;
+          }
+      
+          document.getElementById('offer-details-modal').style.display = 'flex';
+      }
+      
+      document.getElementById('close-details-btn').addEventListener('click', () => {
+          document.getElementById('offer-details-modal').style.display = 'none';
+      });
+      
+      document.addEventListener("DOMContentLoaded", () => {
+          const flashMessages = document.querySelectorAll(".flash-messages .alert");
+      
+          flashMessages.forEach(message => {
+              setTimeout(() => {
+                  message.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+                  message.style.opacity = "0";
+                  message.style.transform = "translateY(-10px)";
+                  setTimeout(() => message.remove(), 500);
+              }, 3000);
+          });
+      });
+      
+      /*=============== DARK LIGHT THEME ===============*/ 
+      // Handle theme switching functionality
+      const themeButton = document.getElementById('theme-button');
+      const darkTheme = 'dark-theme';
+      const iconTheme = 'ri-sun-line';
+      
+      // Get the saved theme and icon from localStorage
+      const selectedTheme = localStorage.getItem('selected-theme');
+      const selectedIcon = localStorage.getItem('selected-icon');
+      
+      // Helper functions to check the current theme and icon
+      const getCurrentTheme = () => document.body.classList.contains(darkTheme) ? 'dark' : 'light';
+      const getCurrentIcon = () => themeButton.classList.contains(iconTheme) ? 'ri-moon-line' : 'ri-sun-line';
+      
+      // Apply the saved theme and icon when the page loads
+      if (selectedTheme) {
+      document.body.classList[selectedTheme === 'dark' ? 'add' : 'remove'](darkTheme);
+      themeButton.classList[selectedIcon === 'ri-moon-line' ? 'add' : 'remove'](iconTheme);
+      }
+      
+      // Toggle the theme and icon when the theme button is clicked
+      themeButton.addEventListener('click', () => {
+      document.body.classList.toggle(darkTheme); // Toggle dark theme
+      themeButton.classList.toggle(iconTheme); // Toggle icon
+      
+      // Save the current theme and icon to localStorage
+      localStorage.setItem('selected-theme', getCurrentTheme());
+      localStorage.setItem('selected-icon', getCurrentIcon());
+      });
+      
+      // Display all the books (randomized) when the page is loaded
+      displayBooks(books);
+      
+    </script>
+  </body>
+</html>

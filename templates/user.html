@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css">
+    <title>User Settings</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+        color: #333;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+      .dark-mode {
+        background-color: #121212;
+        color: #fff;
+      }
+      .container {
+        max-width: 700px;
+        width: 100%;
+        background: #fff;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
+        margin: 1rem;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        position: relative;
+      }
+      .dark-mode .container {
+        background-color: #1e1e1e;
+        color: #fff;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        font-size: 2rem;
+        color: inherit;
+      }
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+      .form-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        color: inherit;
+      }
+      .form-group input,
+      .form-group select {
+        width: 95%;
+        padding: 0.8rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+        margin-top: 0.5rem;
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+      .dark-mode .form-group input,
+      .dark-mode .form-group select {
+        background-color: #333;
+        color: #fff;
+        border: 1px solid #555;
+      }
+      .form-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+      }
+      .form-actions button {
+        padding: 0.8rem 2rem;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        color: #fff;
+        transition: background-color 0.3s ease;
+      }
+      .save-btn {
+        background-color: #4CAF50;
+      }
+      .save-btn:hover {
+        background-color: #45a049;
+      }
+      .cancel-btn {
+        background-color: #f44336;
+      }
+      .books-btn {
+        background-color: #1c42eb;
+      }
+      .cancel-btn:hover {
+        background-color: #da190b;
+      }
+      .dark-mode .save-btn {
+        background-color: #357a38;
+      }
+      .dark-mode .cancel-btn {
+        background-color: #cc3b30;
+      }
+      .dark-mode .books-btn {
+        background-color: #132db3;
+      }
+      .dark-mode .cancel-btn:hover {
+        background-color: #b02d26;
+      }
+      .theme-toggle {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        cursor: pointer;
+        font-size: 24px;
+        color: #333;
+        transition: color 0.3s ease;
+      }
+      .dark-mode .theme-toggle {
+        color: #fff;
+      }
+      .book-list-section {
+        width: 100%;
+        max-width: 700px;
+        margin: 1rem 0;
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s ease, color 0.3s ease;
+        overflow-y: auto;
+        max-height: 300px;
+      }
+      .dark-mode .book-list-section {
+        background-color: #1e1e1e;
+        color: #fff;
+      }
+      .book-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+        border-radius: 6px;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+      }
+      .book-item:hover {
+        background-color: #f0f0f0;
+      }
+      .dark-mode .book-item:hover {
+        background-color: #333;
+      }
+      .book-item img {
+        width: 50px;
+        height: 75px;
+        margin-right: 1rem;
+        border-radius: 4px;
+        object-fit: cover;
+      }
+      .book-details-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        justify-content: center;
+        align-items: center;
+      }
+      .book-details-modal__content {
+        background: #fff;
+        padding: 2rem;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 500px;
+        text-align: center;
+        position: relative;
+      }
+      .dark-mode .book-details-modal__content {
+        background: #1e1e1e;
+        color: #fff;
+      }
+      .book-details-modal__content img {
+        width: 150px;
+        height: 225px;
+        margin-bottom: 1rem;
+        border-radius: 6px;
+        object-fit: cover;
+      }
+      .close-details-btn {
+        margin-top: 1rem;
+        padding: 0.5rem 1.5rem;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        background-color: #f44336;
+        color: #fff;
+        transition: background-color 0.3s ease;
+      }
+      .close-details-btn:hover {
+        background-color: #da190b;
+      }
+
+      .flash-container {
+      position: fixed;
+      top: 60px;
+      right: 20px;
+      z-index: 1000;
+      max-width: 300px;
+      }
+      .flash-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      }
+      .alert {
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-size: 14px;
+      color: #fff;
+      animation: fade-in-out 4s ease-in-out;
+      opacity: 0.95;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+      .alert-success {
+      background-color: #28a745; 
+      }
+      .alert-danger {
+      background-color: #dc3545; 
+      }
+      .alert-warning {
+      background-color: #ffc107; 
+      }
+      .alert-info {
+      background-color: #17a2b8; 
+      }
+      /* Botão Remove - Estilo geral */
+      .remove-btn {
+        background-color: #007BFF; /* Azul padrão */
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin-right: 10px;
+        cursor: pointer;
+        border-radius: 5px;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        font-size: 15px;
+      }
+
+      .remove-btn:active {
+        background-color: #003f7f; /* Azul ainda mais escuro no clique */
+      }
+
+      /* Modo escuro */
+      body.dark-mode .remove-btn {
+        background-color: #339AFF; /* Azul mais claro no modo escuro */
+      }
+
+      body.dark-mode .remove-btn:hover {
+        background-color: #0073e6; /* Azul intermediário no hover no modo escuro */
+      }
+
+      body.dark-mode .remove-btn:active {
+        background-color: #005bb5; /* Azul mais escuro no clique no modo escuro */
+      }
+    </style>
+    <script>
+      function validatePhoneInput(event) {
+         const input = event.target;
+         let value = input.value.replace(/\D/g, ''); 
+         if (value.length > 9) {
+            value = value.slice(0, 9); 
+         }
+        input.value = value;
+      }
+
+      function confirmRemoval(event) {
+      const confirmMessage = "Are you sure you want to remove this book? This action cannot be undone.";
+      if (!confirm(confirmMessage)) {
+        event.preventDefault(); // Impede o envio do formulário se o usuário cancelar
+        return false;
+      }
+      return true; // Prossegue com a submissão do formulário
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const flashMessages = document.querySelectorAll(".flash-messages .alert");
+      
+        flashMessages.forEach(message => {
+          setTimeout(() => {
+            message.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+            message.style.opacity = "0";
+            message.style.transform = "translateY(-10px)";
+            setTimeout(() => message.remove(), 500);
+          }, 3000); // 3 seconds before disappearing
+        });
+      });
+
+      document.addEventListener('DOMContentLoaded', function () {
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+
+        // Toggle dark mode
+        themeToggle.addEventListener('click', function () {
+          body.classList.toggle('dark-mode');
+          localStorage.setItem('dark-mode', body.classList.contains('dark-mode'));
+        });
+
+        if (localStorage.getItem('dark-mode') === 'true') {
+          body.classList.add('dark-mode');
+        }
+
+        document.querySelectorAll('.book-item').forEach(item => {
+          item.addEventListener('click', () => showBookDetails(item));
+        });
+
+        document.getElementById('close-details-btn').addEventListener('click', () => {
+          document.getElementById('book-details-modal').style.display = 'none';
+        });
+      });
+
+      function showBookDetails(bookElement) {
+        const book = {
+          id: bookElement.getAttribute('data-id'),
+          title: bookElement.getAttribute('data-title'),
+          author: bookElement.getAttribute('data-author'),
+          genre: bookElement.getAttribute('data-genre'),
+          dateAdded: bookElement.getAttribute('data-dateAdded'),
+          image: bookElement.getAttribute('data-image_url'),
+        };
+
+        document.getElementById('book-title').textContent = book.title;
+        document.getElementById('book-author').textContent = book.author;
+        document.getElementById('book-genre').textContent = book.genre;
+        document.getElementById('book-date').textContent = book.dateAdded;
+        document.getElementById('book-image').src = book.image;
+
+        // Set book ID for removal
+        document.getElementById('book-id').value = book.id;
+
+        document.getElementById('book-details-modal').style.display = 'flex';
+      }
+    </script>
+  </head>
+  <body>
+    <div class="flash-message" id="flash-message"></div>
+    <div class="container">
+      <i id="theme-toggle" class="ri-sun-line theme-toggle" title="Toggle Dark Mode"></i>
+      <h1>User Settings</h1>
+      <!-- Container for flash messages -->
+      <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-messages">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% endwith %}
+      </div>
+      <form method="POST">
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" value="{{ user['name'] }}" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" value="{{ user['email'] }}" disabled>
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone (optional)</label>
+          <input type="text" id="phone" name="phone" value="{{ user['phone'] }}" oninput="validatePhoneInput(event)">
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="save-btn">Save Changes</button>
+          <button type="button" class="cancel-btn" onclick="window.location.href='/home'">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="book-list-section">
+      <h2>Your Books</h2>
+      {% for book in books %}
+      <div class="book-item" data-id="{{ book['id'] }}" data-title="{{ book['title'] }}" data-author="{{ book['author'] }}" data-genre="{{ book['genre'] }}" data-dateAdded="{{ book['dateAdded'] }}" data-image_url="{{ book['image_url'] }}">
+        <img src="{{ book['image_url'] }}" alt="{{ book['title'] }}">
+        <div>{{ book['title'] }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="book-details-modal" id="book-details-modal">
+      <div class="book-details-modal__content">
+        <img id="book-image" src="" alt="Book Image">
+        <h3 id="book-title"></h3>
+        <p><strong>Author:</strong> <span id="book-author"></span></p>
+        <p><strong>Genre:</strong> <span id="book-genre"></span></p>
+        <p><strong>Added on:</strong> <span id="book-date"></span></p>
+        <form method="POST" id="remove-book-form" onsubmit="return confirmRemoval(event);">
+          <input type="hidden" name="book_id" id="book-id" value="">
+          <button type="submit" name="remove_book" class="remove-btn" id="remove-book-btn">Remove</button>
+        </form>        
+        <button class="close-details-btn" id="close-details-btn">Close</button>
+      </div>
+    </div>    
+  </body>
+</html>

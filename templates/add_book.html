@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css">
+    <title>Add Book</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        transition: background-color 0.3s, color 0.3s;
+      }
+      body.dark-mode {
+        background-color: hsl(230, 12%, 12%);
+        color: #f4f4f4;
+      }
+      .container {
+        position: relative;
+        max-width: 700px;
+        width: 100%;
+        background: #fff;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);
+        margin: 0 1rem;
+        transition: background-color 0.3s, color 0.3s;
+      }
+      body.dark-mode .container {
+        background: #292626;
+        color: #f4f4f4;
+      }
+      .dark-mode-toggle {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #333;
+        transition: color 0.3s;
+      }
+      body.dark-mode .dark-mode-toggle {
+        color: #f4f4f4;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: inherit;
+        font-size: 2rem;
+      }
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+      .form-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        color: inherit;
+      }
+      .form-group input,
+      .form-group select {
+        width: 95%;
+        padding: 0.8rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+        margin-top: 0.5rem;
+        background-color: #f4f4f4;
+        color: #131111;
+        transition: background-color 0.3s, color 0.3s;
+      }
+      body.dark-mode .form-group input,
+      body.dark-mode .form-group select {
+        background-color: hsl(230, 12%, 12%);
+        color: #f4f4f4;
+        border-color: #666;
+      }
+      .form-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+      }
+      .form-actions button {
+        padding: 0.8rem 2rem;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        color: #fff;
+        transition: background-color 0.3s ease;
+      }
+      .save-btn {
+        background-color: #4CAF50;
+      }
+      .save-btn:hover {
+        background-color: #45a049;
+      }
+      .cancel-btn {
+        background-color: #f44336;
+      }
+      .cancel-btn:hover {
+        background-color: #da190b;
+      }
+      .flash-message {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 4px;
+        font-weight: bold;
+        color: #fff;
+      }
+      .flash-success {
+        background-color: #4CAF50;
+      }
+      .flash-danger {
+        background-color: #f44336;
+      }
+      .form-group input[type="url"] {
+        padding: 0.8rem;
+      }
+      @media (max-width: 768px) {
+        .container {
+          padding: 1rem;
+        }
+        .form-actions button {
+          padding: 0.8rem 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <i class="ri-sun-line dark-mode-toggle" id="dark-mode-toggle"></i>
+      <h1>Add a Book</h1>
+      <!-- Display success or error messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="flash-message {{ messages[0][0] == 'success' and 'flash-success' or 'flash-danger' }}">
+        {{ messages[0][1] }}
+      </div>
+      {% endif %}
+      {% endwith %}
+      <form id="add-book-form" method="POST" action="/add_book" enctype="multipart/form-data">
+        <!-- Title -->
+        <div class="form-group">
+          <label for="title">Title</label>
+          <input type="text" id="title" name="title" placeholder="Enter book title" required>
+        </div>
+        <!-- Author -->
+        <div class="form-group">
+          <label for="author">Author</label>
+          <input type="text" id="author" name="author" placeholder="Enter author's name" required>
+        </div>
+        <!-- Genre -->
+        <div class="form-group">
+          <label for="genre">Genre</label>
+          <select id="genre" name="genre" required>
+            <option value="" disabled selected>Select a genre</option>
+            <option value="Art">Art</option>
+            <option value="Comics">Comics</option>
+            <option value="Exact & Natural Sciences">Exact & Natural Sciences</option>
+            <option value="Social & Human Sciences">Social & Human Sciences</option>
+            <option value="Personal Development">Personal Development</option>
+            <option value="Sports and Leisure">Sports and Leisure</option>
+            <option value="Dictionaries & Encyclopedias">Dictionaries & Encyclopedias</option>
+            <option value="Law">Law</option>
+            <option value="Economics & Finance">Economics & Finance</option>
+            <option value="Engineering">Engineering</option>
+            <option value="Teaching and Education">Teaching and Education</option>
+            <option value="Gastronomy and Wines">Gastronomy and Wines</option>
+            <option value="Management">Management</option>
+            <option value="Tourist Guides and Maps">Tourist Guides and Maps</option>
+            <option value="History">History</option>
+            <option value="Children and Youth">Children and Youth</option>
+            <option value="IT">IT</option>
+            <option value="Literature">Literature</option>
+            <option value="Medicine">Medicine</option>
+            <option value="Politics">Politics</option>
+            <option value="Health and Well-being">Health and Well-being</option>
+            <option value="Religion and Morality">Religion and Morality</option>
+            <option value="Practical Life">Practical Life</option>
+          </select>
+        </div>
+        <!-- Book Cover URL -->
+        <div class="form-group">
+          <label for="cover-image">Book Cover URL</label>
+          <input type="url" id="cover-image" name="image_url" placeholder="Enter URL of the book cover image" required>
+        </div>
+        <!-- Actions -->
+        <div class="form-actions">
+          <button type="submit" class="save-btn">Add Book</button>
+          <button type="button" class="cancel-btn" onclick="window.location.href='/home'">Go Back</button>
+        </div>
+      </form>
+    </div>
+    <script>
+      const toggleButton = document.getElementById('dark-mode-toggle');
+      const body = document.body;
+
+      // Load initial mode state from localStorage
+      const isDarkMode = localStorage.getItem('darkMode') === 'true';
+      if (isDarkMode) {
+        body.classList.add('dark-mode');
+        toggleButton.classList.replace('ri-sun-line', 'ri-moon-line');
+      }
+
+      toggleButton.addEventListener('click', () => {
+        const isDarkMode = body.classList.toggle('dark-mode');
+        toggleButton.classList.toggle('ri-moon-line');
+        toggleButton.classList.toggle('ri-sun-line');
+
+        // Save state to localStorage
+        localStorage.setItem('darkMode', isDarkMode);
+      });
+    </script>
+  </body>
+</html>
