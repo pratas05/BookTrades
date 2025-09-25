@@ -1,0 +1,8 @@
+flask
+gunicorn
+sqlite3
+bcrypt
+flask-login
+random
+string
+datetime
