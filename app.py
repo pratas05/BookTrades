@@ -129,7 +129,7 @@ def home():
     finally:
         conn.close()  
 
-    return render_template('home.html', books=books, query=query, wishlist_ids=wishlist_ids, tradelist_ids=tradelist_ids)
+    return render_template('index.html', books=books, query=query, wishlist_ids=wishlist_ids, tradelist_ids=tradelist_ids)
 
 ######## ROTA DA PAGINA RECOMMEND QUE TÊM OS LIVROS TODOS COM OPÇÃO DE ADICIONAR A WISHLIST E PEDIR TROCA 
 @app.route('/recommend', methods=['GET', 'POST'])
